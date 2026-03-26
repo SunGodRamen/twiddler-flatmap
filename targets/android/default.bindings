@@ -1,24 +1,23 @@
-# semantic action = android binding
+# target: android
+# version: 1.0.0
+# platform: android
+# confidence: mixed
 
-NAV_UP=DPAD_UP
-NAV_RIGHT=DPAD_RIGHT
-NAV_LEFT=DPAD_LEFT
-NAV_DOWN=DPAD_DOWN
-NAV_PAGEUP=KEYCODE_PAGE_UP
-NAV_PAGEDOWN=KEYCODE_PAGE_DOWN
-NAV_HOME=KEYCODE_MOVE_HOME
-NAV_END=KEYCODE_MOVE_END
-
-UI_SPACE=SPACE
-UI_TAB=TAB
-UI_BACKTAB=SHIFT+TAB
-UI_ENTER=ENTER
-UI_ESCAPE=ESCAPE
-
-EDIT_COPY=CTRL+C
-EDIT_PASTE=CTRL+V
-
-MEDIA_VOLUME_DOWN=SHIFT+VOLUME_DOWN
-SYS_SCROLLLOCK=SCROLL_LOCK
-
-RAW_128=UNRESOLVED
+NAV_UP=DPAD_UP                         # confidence:high
+NAV_RIGHT=DPAD_RIGHT                   # confidence:high
+NAV_LEFT=DPAD_LEFT                     # confidence:high
+NAV_DOWN=DPAD_DOWN                     # confidence:high
+NAV_PAGEUP=KEYCODE_PAGE_UP             # confidence:high
+NAV_PAGEDOWN=KEYCODE_PAGE_DOWN         # confidence:high
+NAV_HOME=KEYCODE_MOVE_HOME             # confidence:high
+NAV_END=KEYCODE_MOVE_END               # confidence:high
+UI_SPACE=SPACE                         # confidence:high
+UI_TAB=TAB                             # confidence:high
+UI_BACKTAB=SHIFT+TAB                   # confidence:high
+UI_ENTER=ENTER                         # confidence:high
+UI_ESCAPE=ESCAPE                       # confidence:high
+EDIT_COPY=CTRL+C                       # confidence:high
+EDIT_PASTE=CTRL+V                      # confidence:high
+MEDIA_VOLUME_DOWN=SHIFT+VOLUME_DOWN    # confidence:low source:inferred
+SYS_SCROLLLOCK=SCROLL_LOCK             # confidence:high
+RAW_128=UNRESOLVED                     # status:blocked

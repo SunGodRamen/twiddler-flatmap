@@ -1,66 +1,101 @@
 #!/usr/bin/env python3
-from __future__ import annotations
+"""validate-flatmap.py — validates canonical flatmap and cross-checks target bindings."""
 
-import re
 import sys
+import re
 from pathlib import Path
 
-MAP_RE = re.compile(r'^([A-Za-z0-9+]+)=([A-Z0-9_]+)$')
-BIND_RE = re.compile(r'^([A-Z0-9_]+)=(.+)$')
+VALID_PREFIXES = {"NAV", "UI", "EDIT", "MEDIA", "SYS", "RAW", "APP", "WM"}
+WARN_PREFIXES = {"RAW"}
 
-def read_map(path: Path):
-    out = {}
-    for lineno, raw in enumerate(path.read_text().splitlines(), start=1):
+CHORD_RE = re.compile(r'^(\d\+)?(\d[LMR])(\+(\d\+)?(\d[LMR]))*$')
+META_RE = re.compile(r'#\s*(.+)')
+KV_RE = re.compile(r'(\w+):(\S+)')
+
+errors = []
+warnings = []
+
+def parse_flatmap(path):
+    entries = {}
+    for lineno, raw in enumerate(path.read_text().splitlines(), 1):
         line = raw.strip()
         if not line or line.startswith('#'):
             continue
-        m = MAP_RE.match(line)
-        if not m:
-            raise ValueError(f'{path}:{lineno}: invalid map line: {raw}')
-        chord, action = m.groups()
-        if chord in out:
-            raise ValueError(f'{path}:{lineno}: duplicate chord: {chord}')
-        out[chord] = action
-    return out
+        meta = {}
+        if '#' in line:
+            code, comment = line.split('#', 1)
+            for k, v in KV_RE.findall(comment):
+                meta[k] = v
+        else:
+            code = line
+        if '=' not in code:
+            errors.append(f"{path}:{lineno} — malformed line: {raw!r}")
+            continue
+        chord, action = code.strip().split('=', 1)
+        chord, action = chord.strip(), action.strip()
+        if not CHORD_RE.match(chord):
+            errors.append(f"{path}:{lineno} — invalid chord token: {chord!r}")
+        prefix = action.split('_')[0]
+        if prefix not in VALID_PREFIXES:
+            errors.append(f"{path}:{lineno} — unknown action prefix: {prefix!r} in {action!r}")
+        if prefix in WARN_PREFIXES:
+            status = meta.get('status', 'unresolved')
+            hypothesis = meta.get('hypothesis', '')
+            hyp_str = f" hypothesis:{hypothesis}" if hypothesis else ""
+            warnings.append(f"{path}:{lineno} — [WARN:unresolved] {chord}={action} status:{status}{hyp_str}")
+        if chord in entries:
+            errors.append(f"{path}:{lineno} — duplicate chord: {chord!r}")
+        entries[chord] = (action, meta)
+    return entries
 
-def read_bindings(path: Path):
-    out = {}
-    for lineno, raw in enumerate(path.read_text().splitlines(), start=1):
+def parse_bindings(path):
+    bindings = {}
+    for lineno, raw in enumerate(path.read_text().splitlines(), 1):
         line = raw.strip()
         if not line or line.startswith('#'):
             continue
-        m = BIND_RE.match(line)
-        if not m:
-            raise ValueError(f'{path}:{lineno}: invalid binding line: {raw}')
-        action, binding = m.groups()
-        out[action] = binding
-    return out
+        code = line.split('#')[0].strip()
+        if '=' not in code:
+            continue
+        action, binding = code.split('=', 1)
+        bindings[action.strip()] = binding.strip()
+    return bindings
 
-def main(argv: list[str]) -> int:
-    if len(argv) != 4:
-        print('usage: validate-flatmap.py <flatmap> <windows.bindings> <android.bindings>')
-        return 2
+def check_coverage(flatmap_entries, bindings, bindings_path):
+    canonical_actions = {action for action, _ in flatmap_entries.values()}
+    for action in canonical_actions:
+        if action not in bindings:
+            errors.append(f"{bindings_path} — missing binding for: {action!r}")
 
-    flatmap = read_map(Path(argv[1]))
-    win = read_bindings(Path(argv[2]))
-    android = read_bindings(Path(argv[3]))
+root = Path(__file__).parent.parent
+flatmap_files = list((root / 'maps').glob('*.flatmap'))
+target_dirs = list((root / 'targets').iterdir())
 
-    actions = sorted(set(flatmap.values()))
-    rc = 0
+if not flatmap_files:
+    errors.append("No .flatmap files found in maps/")
+    sys.exit(1)
 
-    for action in actions:
-        if action not in win:
-            print(f'ERROR missing windows binding: {action}')
-            rc = 1
-        if action not in android:
-            print(f'ERROR missing android binding: {action}')
-            rc = 1
-        if action.startswith('RAW_'):
-            print(f'WARN unresolved raw action: {action}')
+all_entries = {}
+for fm in flatmap_files:
+    all_entries.update(parse_flatmap(fm))
 
-    if rc == 0:
-        print('OK flatmap and bindings are internally consistent')
-    return rc
+for td in target_dirs:
+    if not td.is_dir():
+        continue
+    bindings_file = td / 'default.bindings'
+    if bindings_file.exists():
+        bindings = parse_bindings(bindings_file)
+        check_coverage(all_entries, bindings, bindings_file)
+    else:
+        warnings.append(f"No default.bindings in target: {td.name}")
 
-if __name__ == '__main__':
-    raise SystemExit(main(sys.argv))
+for w in warnings:
+    print(f"WARN  {w}")
+for e in errors:
+    print(f"ERROR {e}")
+
+if errors:
+    print(f"\nFAIL — {len(errors)} error(s), {len(warnings)} warning(s)")
+    sys.exit(1)
+else:
+    print(f"\nOK — 0 errors, {len(warnings)} warning(s), {len(all_entries)} chords validated")

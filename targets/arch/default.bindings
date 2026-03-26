@@ -1,0 +1,24 @@
+# target: arch
+# version: 0.1.0
+# platform: linux/wayland
+# confidence: stub
+# notes: intended for wtype / ydotool / keyd — bindings unconfirmed
+
+NAV_UP=Up                              # confidence:stub
+NAV_RIGHT=Right                        # confidence:stub
+NAV_LEFT=Left                          # confidence:stub
+NAV_DOWN=Down                          # confidence:stub
+NAV_PAGEUP=Prior                       # confidence:stub xdotool keysym
+NAV_PAGEDOWN=Next                      # confidence:stub xdotool keysym
+NAV_HOME=Home                          # confidence:stub
+NAV_END=End                            # confidence:stub
+UI_SPACE=space                         # confidence:stub
+UI_TAB=Tab                             # confidence:stub
+UI_BACKTAB=shift+Tab                   # confidence:stub
+UI_ENTER=Return                        # confidence:stub
+UI_ESCAPE=Escape                       # confidence:stub
+EDIT_COPY=ctrl+c                       # confidence:stub
+EDIT_PASTE=ctrl+v                      # confidence:stub
+MEDIA_VOLUME_DOWN=shift+XF86VolumeDown # confidence:stub
+SYS_SCROLLLOCK=Scroll_Lock             # confidence:stub
+RAW_128=UNRESOLVED                     # status:blocked
