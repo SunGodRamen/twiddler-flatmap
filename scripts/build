@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+cd "$repo" || exit 1
+
+python3 tools/validate-flatmap.py \
+  maps/twiddler3-tabspace-v5-media.flatmap \
+  targets/windows/default.bindings \
+  targets/android/default.bindings
+
+python3 tools/render-review.py
