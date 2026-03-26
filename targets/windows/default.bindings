@@ -1,0 +1,24 @@
+# semantic action = windows binding
+
+NAV_UP=Up
+NAV_RIGHT=Right
+NAV_LEFT=Left
+NAV_DOWN=Down
+NAV_PAGEUP=PageUp
+NAV_PAGEDOWN=PageDown
+NAV_HOME=Home
+NAV_END=End
+
+UI_SPACE=Space
+UI_TAB=Tab
+UI_BACKTAB=Shift+Tab
+UI_ENTER=Enter
+UI_ESCAPE=Escape
+
+EDIT_COPY=Ctrl+C
+EDIT_PASTE=Ctrl+V
+
+MEDIA_VOLUME_DOWN=Shift+VolumeDown
+SYS_SCROLLLOCK=ScrollLock
+
+RAW_128=UNRESOLVED
